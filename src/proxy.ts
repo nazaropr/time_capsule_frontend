@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
 
 const protectedRoutes = ["/dashboard", "/capsules", "/settings"];
 const authRoutes = ["/sign-in", "/sign-up"];
@@ -14,8 +13,6 @@ export async function proxy(request: NextRequest) {
 
   const hasAccessToken = request.cookies.has("access_token");
   const hasRefreshToken = request.cookies.has("refresh_token");
-  console.log("hasRefreshToken", hasRefreshToken);
-  console.log("cookie", request.cookies.get("refresh_token"));
 
   const isAuth = hasAccessToken || hasRefreshToken;
 

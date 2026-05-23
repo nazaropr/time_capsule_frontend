@@ -6,7 +6,7 @@ import { apiFetch } from "@/lib/api";
 
 export default function Navbar() {
   const router = useRouter();
-
+  //todo написати сервіси для методів щоб не викликати fetch
   const handleLogout = async () => {
     try {
       await apiFetch("/auth/logout", {
