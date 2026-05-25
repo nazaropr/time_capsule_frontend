@@ -1,3 +1,5 @@
+import { urls } from "@/lib/api.urls";
+
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
 export async function apiFetch<T>(
@@ -19,17 +21,21 @@ export async function apiFetch<T>(
     },
   });
 
+  console.log("response status:", response.status);
+
   if (
     response.status === 401 &&
     !isRetry &&
-    endpoint !== "/auth/sign-in" &&
-    endpoint !== "/auth/refresh"
+    endpoint !== `${urls.auth.login}` &&
+    endpoint !== `${urls.auth.refresh}`
   ) {
+    console.log("i am heeerreee");
     try {
-      const refreshRes = await fetch(`${BASE_URL}/auth/refresh`, {
+      const refreshRes = await fetch(`${BASE_URL}${urls.auth.refresh}`, {
         method: "POST",
         credentials: "include",
       });
+      console.log("refresh res status:", refreshRes);
 
       if (refreshRes.ok) {
         return apiFetch<T>(endpoint, options, true);
@@ -54,11 +60,18 @@ export async function apiFetch<T>(
 type FetchOptions = Omit<RequestInit, "method" | "body">;
 
 export const apiClient = {
-  get: async <T>(url: string, options?: FetchOptions): Promise<{ data: T; headers: Headers }> => {
+  get: async <T>(
+    url: string,
+    options?: FetchOptions,
+  ): Promise<{ data: T; headers: Headers }> => {
     return apiFetch<T>(url, { ...options, method: "GET" });
   },
 
-  post: async <T, B = unknown>(url: string, body?: B, options?: FetchOptions): Promise<{ data: T; headers: Headers }> => {
+  post: async <T, B = unknown>(
+    url: string,
+    body?: B,
+    options?: FetchOptions,
+  ): Promise<{ data: T; headers: Headers }> => {
     return apiFetch<T>(url, {
       ...options,
       method: "POST",
@@ -66,7 +79,11 @@ export const apiClient = {
     });
   },
 
-  patch: async <T, B = unknown>(url: string, body?: B, options?: FetchOptions): Promise<{ data: T; headers: Headers }> => {
+  patch: async <T, B = unknown>(
+    url: string,
+    body?: B,
+    options?: FetchOptions,
+  ): Promise<{ data: T; headers: Headers }> => {
     return apiFetch<T>(url, {
       ...options,
       method: "PATCH",
@@ -74,7 +91,10 @@ export const apiClient = {
     });
   },
 
-  delete: async <T>(url: string, options?: FetchOptions): Promise<{ data: T; headers: Headers }> => {
+  delete: async <T>(
+    url: string,
+    options?: FetchOptions,
+  ): Promise<{ data: T; headers: Headers }> => {
     return apiFetch<T>(url, { ...options, method: "DELETE" });
   },
 };

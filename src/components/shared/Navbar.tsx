@@ -3,15 +3,14 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/api";
+import { authService } from "../../services/authService";
 
 export default function Navbar() {
   const router = useRouter();
-  //todo написати сервіси для методів щоб не викликати fetch
+
   const handleLogout = async () => {
     try {
-      await apiFetch("/auth/logout", {
-        method: "POST",
-      });
+      await authService.signOut();
       router.push("/");
       router.refresh();
     } catch (error) {
