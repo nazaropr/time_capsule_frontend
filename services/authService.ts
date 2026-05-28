@@ -15,7 +15,4 @@ export const authService = {
   signOut: async () => {
     return apiClient.post(urls.auth.logout);
   },
-  refresh: async () => {
-    return apiClient.post(urls.auth.refresh);
-  },
 };

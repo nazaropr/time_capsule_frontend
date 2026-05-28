@@ -16,9 +16,9 @@ export async function proxy(request: NextRequest) {
 
   const isAuth = hasAccessToken || hasRefreshToken;
 
-  if (isProtected && !isAuth) {
-    const url = new URL("/sign-in", request.url);
-    url.searchParams.set("from", currentUrl);
+  if (isProtected && !hasAccessToken) {
+    const url = new URL("/api/auth/refresh", request.url);
+    url.searchParams.set("redirect", currentUrl);
     return NextResponse.redirect(new URL(url));
   }
 

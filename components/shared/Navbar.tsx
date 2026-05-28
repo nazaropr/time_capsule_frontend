@@ -2,21 +2,11 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { apiFetch } from "@/lib/api";
-import { authService } from "../../services/authService";
+import { signOut } from "@/app/(auth)/actions";
 
 export default function Navbar() {
-  const router = useRouter();
-
   const handleLogout = async () => {
-    try {
-      await authService.signOut();
-      router.push("/");
-      router.refresh();
-    } catch (error) {
-      console.error("Logout failed:", error);
-      router.push("/");
-    }
+    await signOut();
   };
 
   return (

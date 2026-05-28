@@ -1,55 +1,63 @@
-"use client";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { useState } from "react";
-import { apiFetch } from "@/lib/api";
-import { authService } from "../services/authService";
+import { signUp } from "@/app/(auth)/actions";
 
-interface LoginFormData {
+interface SignUpFormData {
+  name: string;
   email: string;
   password: string;
 }
 
-export default function SignInForm() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-
+export default function SignUpForm() {
   let {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<LoginFormData>();
+  } = useForm<SignUpFormData>();
   const [serverError, setServerError] = useState("");
 
-  const onSubmit = async (data: LoginFormData) => {
-    try {
-      setServerError("");
+  const onSubmit = async (data: SignUpFormData) => {
+    setServerError("");
 
-      await authService.signIn(data);
-
-      const from = searchParams.get("from") || "/dashboard";
-      router.push(from);
-      router.refresh();
-    } catch (e) {
-      if (e instanceof Error) {
-        setServerError(e.message);
-      } else {
-        setServerError("Something went wrong");
-      }
+    const response = await signUp(data);
+    if (!response.success) {
+      setServerError(response.error || "Something went wrong");
     }
+    // router.push("/sign-in");
+    // router.refresh();
   };
 
   return (
     <div className="auth-card">
       <div className="text-center mb-8">
         <h1 className="text-3xl font-extrabold tracking-tight text-white mb-2">
-          Welcome Back
+          Join Us
         </h1>
-        <p className="text-slate-400">Please enter your details to sign in</p>
+        <p className="text-slate-400">
+          Create your account to start storing memories
+        </p>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+        <div>
+          <label className="block text-sm font-medium text-slate-300 mb-1.5 ml-1">
+            Full Name
+          </label>
+          <input
+            type="text"
+            placeholder="John Doe"
+            className="input-field"
+            {...register("name", { required: "Name is required" })}
+          />
+          {errors.name && (
+            <p className="mt-1 text-xs text-destructive ml-1">
+              {errors.name.message}
+            </p>
+          )}
+        </div>
+
         <div>
           <label className="block text-sm font-medium text-slate-300 mb-1.5 ml-1">
             Email Address
@@ -119,20 +127,20 @@ export default function SignInForm() {
                   d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                 ></path>
               </svg>
-              Signing in...
+              Creating account...
             </span>
           ) : (
-            "Sign In"
+            "Create Account"
           )}
         </button>
 
         <p className="text-center text-sm text-slate-400 mt-6">
-          Don&apos;t have an account?{" "}
+          Already have an account?{" "}
           <Link
-            href="/sign-up"
+            href="/sign-in"
             className="text-indigo-400 hover:text-indigo-300 font-medium transition-colors"
           >
-            Create one for free
+            Sign in here
           </Link>
         </p>
       </form>
