@@ -21,6 +21,7 @@ export interface Recipient {
 
 export interface Capsule {
   id: string;
+  owner: string;
   title: string;
   unlockAt: string;
   createdAt: string;
@@ -34,13 +35,7 @@ export interface CapsuleWithContent extends Capsule {
   content: string | null;
 }
 
-export interface ActionState {
-  error?: string;
-  success?: boolean;
-  message?: string;
-}
-
-export interface CreateCapsuleDto {
+export interface CreateCapsule {
   title: string;
   content: string;
   unlockAt: string;
@@ -48,12 +43,20 @@ export interface CreateCapsuleDto {
   recipients: Recipient[];
 }
 
-export interface UpdateProfileDto {
+export type UpdateCapsule = Partial<CreateCapsule>;
+
+export interface ActionState {
+  error?: string;
+  success?: boolean;
+  message?: string;
+}
+
+export interface UpdateProfile {
   name?: string;
   email?: string;
 }
 
-export interface UpdatePasswordDto {
+export interface UpdatePassword {
   currentPassword: string;
   newPassword: string;
   confirmPassword: string;

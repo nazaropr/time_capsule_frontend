@@ -1,5 +1,5 @@
 import { urls } from "@/lib/api.urls";
-import { getCookieHeader, syncResponseCookies } from "@/helpers/cookieParsers";
+import { getCookieHeader, syncResponseCookies } from "@/lib/utils";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
