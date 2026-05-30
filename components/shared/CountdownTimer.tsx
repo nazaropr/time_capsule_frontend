@@ -19,12 +19,14 @@ export default function CountDownTimer({ unlockAt }: IProps) {
   });
 
   useEffect(() => {
+    let interval: NodeJS.Timeout;
+    
     const updateTimer = () => {
       const now = Date.now();
       const diff = targetDate - now;
 
       if (diff <= 0) {
-        clearInterval(interval);
+        if (interval) clearInterval(interval);
         setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
         router.refresh();
         return;
@@ -40,8 +42,11 @@ export default function CountDownTimer({ unlockAt }: IProps) {
     };
 
     updateTimer();
-    const interval = setInterval(updateTimer, 1000);
-    return () => clearInterval(interval);
+    interval = setInterval(updateTimer, 1000);
+    
+    return () => {
+      if (interval) clearInterval(interval);
+    };
   }, [targetDate, router]);
 
   return (

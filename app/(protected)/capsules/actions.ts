@@ -2,7 +2,7 @@
 
 import { ActionState } from "@/types";
 import { capsulesService } from "@/services/capsulesService";
-import { revalidatePath } from "next/cache";
+import { revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 
 export async function createCapsule(
@@ -31,11 +31,12 @@ export async function createCapsule(
     });
 
     // return { success: true };
-  } catch {
+  } catch (error) {
+    if (error instanceof Error && error.message === "NEXT_REDIRECT")
+      throw error;
     return { error: "Failed to create capsule" };
   }
-  revalidatePath("/dashboard");
-  revalidatePath("/dashboard");
+  revalidateTag("capsules", "default");
   redirect("/dashboard");
 }
 
@@ -52,6 +53,11 @@ export async function updateCapsule(
   const recipientsRaw = formData.get("recipients");
   const recipients = recipientsRaw ? JSON.parse(String(recipientsRaw)) : [];
 
+  const initialRecipientsRaw = formData.get("initialRecipients");
+  const initialRecipients = initialRecipientsRaw
+    ? JSON.parse(String(initialRecipientsRaw))
+    : [];
+
   if (!capsuleId || !title || !content || !unlockAt) {
     return { error: "Missing required fields" };
   }
@@ -62,13 +68,42 @@ export async function updateCapsule(
       content: String(content),
       unlockAt: String(unlockAt),
       isPublic,
-      recipients,
     });
-  } catch {
+
+    const initialEmails = new Set<string>(
+      initialRecipients.map((r: any) => String(r.email)),
+    );
+    const newEmails = new Set<string>(
+      recipients.map((r: any) => String(r.email)).filter(Boolean),
+    );
+
+    const toAdd = [...newEmails].filter((email) => !initialEmails.has(email));
+    const toRemove = [...initialEmails].filter(
+      (email) => !newEmails.has(email),
+    );
+
+    for (const email of toAdd) {
+      try {
+        await capsulesService.addRecipient(capsuleId, email);
+      } catch (err) {
+        console.error("Failed to add recipient", email, err);
+      }
+    }
+
+    for (const email of toRemove) {
+      try {
+        await capsulesService.removeRecipient(capsuleId, email);
+      } catch (err) {
+        console.error("Failed to remove recipient", email, err);
+      }
+    }
+  } catch (error) {
+    if (error instanceof Error && error.message === "NEXT_REDIRECT")
+      throw error;
     return { error: "Failed to update capsule" };
   }
-  revalidatePath("/dashboard");
-  revalidatePath(`/capsules/${capsuleId}`);
+  revalidateTag("capsules", "default");
+  revalidateTag(`capsule-${capsuleId}`, "default");
   redirect(`/capsules/${capsuleId}`);
 }
 
@@ -78,12 +113,18 @@ export async function deleteCapsule(capsuleId: string) {
   }
 
   try {
-    await capsulesService.delete(capsuleId);
+    console.log("Removing capsule");
+    const response = await capsulesService.delete(capsuleId);
+    console.log("RESPONSE: ", response);
 
     // return { success: true };
-  } catch {
+  } catch (error) {
+    console.log("ERROROROROR", error);
+    if (error instanceof Error && error.message === "NEXT_REDIRECT")
+      throw error;
     return { error: "Failed to delete capsule" };
   }
-  revalidatePath("/dashboard");
+  revalidateTag("capsules", "default");
+  revalidateTag(`capsule-${capsuleId}`, "default");
   redirect("/dashboard");
 }

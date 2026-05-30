@@ -108,7 +108,6 @@ export default function CapsuleComponent({ capsule, currentUserId }: IProps) {
               Capsule Content
             </h3>
             <div className="prose prose-invert prose-slate max-w-none prose-p:text-slate-300 prose-headings:text-white">
-              {/* Using pre for basic text rendering, would use a markdown parser here normally */}
               <pre className="font-sans whitespace-pre-wrap text-lg leading-relaxed bg-transparent p-0 m-0 border-0 text-slate-300">
                 {capsule.content}
               </pre>

@@ -123,6 +123,11 @@ export default function EditCapsuleForm({ capsule }: Props) {
 
           <input
             type="hidden"
+            name="initialRecipients"
+            value={JSON.stringify(capsule.recipients || [])}
+          />
+          <input
+            type="hidden"
             name="recipients"
             value={JSON.stringify(recipients)}
           />

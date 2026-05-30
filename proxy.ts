@@ -6,9 +6,9 @@ const authRoutes = ["/sign-in", "/sign-up"];
 export async function proxy(request: NextRequest) {
   const currentUrl = request.nextUrl.pathname;
 
-  const isProtected = protectedRoutes.some((route) =>
-    currentUrl.startsWith(route),
-  );
+  const isProtected =
+    protectedRoutes.some((route) => currentUrl.startsWith(route)) &&
+    !currentUrl.startsWith("/capsules/public");
   const isAuthRoute = authRoutes.includes(currentUrl);
 
   const hasAccessToken = request.cookies.has("access_token");
@@ -17,7 +17,7 @@ export async function proxy(request: NextRequest) {
   const isAuth = hasAccessToken || hasRefreshToken;
 
   if (isProtected && !hasAccessToken) {
-    const url = new URL("/api/auth/refresh", request.url);
+    const url = new URL("/auth/refresh", request.url);
     url.searchParams.set("redirect", currentUrl);
     return NextResponse.redirect(new URL(url));
   }

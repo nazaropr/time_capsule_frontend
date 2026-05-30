@@ -1,5 +1,6 @@
-import { urls } from "@/lib/api.urls";
 import { getCookieHeader, syncResponseCookies } from "@/lib/utils";
+import { redirect } from "next/navigation";
+import { urls } from "@/lib/api.urls";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
@@ -13,11 +14,9 @@ export async function apiFetch<T>(
     "Content-Type": "application/json",
   };
   const cookieHeader = await getCookieHeader();
-  console.log(cookieHeader);
 
   const response = await fetch(url, {
     ...options,
-    // credentials: "include",
     headers: {
       ...defaultHeaders,
       ...options.headers,
@@ -25,29 +24,22 @@ export async function apiFetch<T>(
     },
   });
 
-  // console.log("response status:", response.status);
-
   if (
     response.status === 401 &&
     !isRetry &&
-    endpoint !== `${urls.auth.login}` &&
-    endpoint !== `${urls.auth.refresh}`
+    endpoint !== urls.auth.login &&
+    endpoint !== urls.auth.refresh
   ) {
     const refreshRes = await fetch(`${BASE_URL}${urls.auth.refresh}`, {
       method: "POST",
-      // credentials: "include",
       headers: {
         Cookie: cookieHeader,
       },
     });
 
     if (!refreshRes.ok) {
-      const error = await refreshRes.json();
-
-      throw new Error(error.message || "Refresh failed");
+      redirect("/sign-in");
     }
-    // const setCookie = refreshRes.headers.get("set-cookie");
-    // console.log("setCookie ", setCookie);
 
     await syncResponseCookies(refreshRes);
 

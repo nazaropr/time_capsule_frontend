@@ -10,7 +10,7 @@ export default async function EditCapsulePage({
 }) {
   const { id } = await params;
 
-  const { data: capsule } = await capsulesService.getById(id);
+  const { data: capsule } = await capsulesService.getByIdEdit(id);
   const { data: user } = await authService.getMe();
 
   if (capsule.owner !== user.id) {
