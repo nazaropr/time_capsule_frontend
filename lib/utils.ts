@@ -18,17 +18,38 @@ export async function syncResponseCookies(response: Response) {
   const parsedCookies = setCookieParser.parse(setCookieHeader);
 
   for (const cookie of parsedCookies) {
-    try {
-      cookieStore.set(cookie.name, cookie.value, {
-        httpOnly: cookie.httpOnly,
-        secure: cookie.secure,
-        sameSite: cookie.sameSite as "lax" | "strict" | "none",
-        path: cookie.path,
-        maxAge: cookie.maxAge,
-        expires: cookie.expires,
-      });
-    } catch (error) {
-      console.log(error);
+    cookieStore.set(cookie.name, cookie.value, {
+      httpOnly: cookie.httpOnly,
+      secure: cookie.secure,
+      sameSite: cookie.sameSite as "lax" | "strict" | "none",
+      path: cookie.path,
+      maxAge: cookie.maxAge,
+      expires: cookie.expires,
+    });
+  }
+}
+
+export function mergeSetCookies(
+  currentHeader: string,
+  response: Response,
+): string {
+  const jar = new Map<string, string>();
+
+  for (const pair of currentHeader.split("; ")) {
+    if (!pair) continue;
+    const eq = pair.indexOf("=");
+    if (eq > 0) jar.set(pair.slice(0, eq), pair.slice(eq + 1));
+  }
+
+  for (const cookie of setCookieParser.parse(response.headers.getSetCookie())) {
+    if (cookie.value === "" || cookie.maxAge === 0) {
+      jar.delete(cookie.name);
+    } else {
+      jar.set(cookie.name, cookie.value);
     }
   }
+
+  return [...jar.entries()]
+    .map(([name, value]) => `${name}=${value}`)
+    .join("; ");
 }

@@ -2,6 +2,7 @@
 
 import { ActionState } from "@/types";
 import { capsulesService } from "@/services/capsulesService";
+import { UnauthorizedError } from "@/lib/errors";
 import { revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 
@@ -32,8 +33,7 @@ export async function createCapsule(
 
     // return { success: true };
   } catch (error) {
-    if (error instanceof Error && error.message === "NEXT_REDIRECT")
-      throw error;
+    if (error instanceof UnauthorizedError) redirect("/sign-in");
     return { error: "Failed to create capsule" };
   }
   revalidateTag("capsules", "default");
@@ -98,8 +98,7 @@ export async function updateCapsule(
       }
     }
   } catch (error) {
-    if (error instanceof Error && error.message === "NEXT_REDIRECT")
-      throw error;
+    if (error instanceof UnauthorizedError) redirect("/sign-in");
     return { error: "Failed to update capsule" };
   }
   revalidateTag("capsules", "default");
@@ -113,15 +112,9 @@ export async function deleteCapsule(capsuleId: string) {
   }
 
   try {
-    console.log("Removing capsule");
-    const response = await capsulesService.delete(capsuleId);
-    console.log("RESPONSE: ", response);
-
-    // return { success: true };
+    await capsulesService.delete(capsuleId);
   } catch (error) {
-    console.log("ERROROROROR", error);
-    if (error instanceof Error && error.message === "NEXT_REDIRECT")
-      throw error;
+    if (error instanceof UnauthorizedError) redirect("/sign-in");
     return { error: "Failed to delete capsule" };
   }
   revalidateTag("capsules", "default");

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { urls } from "@/lib/api.urls";
+import * as setCookieParser from "set-cookie-parser";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
@@ -30,10 +31,15 @@ export async function GET(request: NextRequest) {
 
   const response = NextResponse.redirect(url, 303);
 
-  const setCookieHeader = refreshRes.headers.get("set-cookie");
-
-  if (setCookieHeader) {
-    response.headers.set("set-cookie", setCookieHeader);
+  for (const cookie of setCookieParser.parse(refreshRes.headers.getSetCookie())) {
+    response.cookies.set(cookie.name, cookie.value, {
+      httpOnly: cookie.httpOnly,
+      secure: cookie.secure,
+      sameSite: cookie.sameSite as "lax" | "strict" | "none",
+      path: cookie.path,
+      maxAge: cookie.maxAge,
+      expires: cookie.expires,
+    });
   }
   return response;
 }

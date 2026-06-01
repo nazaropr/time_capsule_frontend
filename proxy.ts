@@ -12,15 +12,14 @@ export async function proxy(request: NextRequest) {
   const isAuthRoute = authRoutes.includes(currentUrl);
 
   const hasAccessToken = request.cookies.has("access_token");
-  const hasRefreshToken = request.cookies.has("refresh_token");
 
-  const isAuth = hasAccessToken || hasRefreshToken;
-
-  if (isProtected && !hasAccessToken) {
+  if (isProtected && !hasAccessToken && request.method === "GET") {
     const url = new URL("/auth/refresh", request.url);
     url.searchParams.set("redirect", currentUrl);
-    return NextResponse.redirect(new URL(url));
+    return NextResponse.redirect(url);
   }
+
+  const isAuth = hasAccessToken || request.cookies.has("refresh_token");
 
   if (isAuth && isAuthRoute) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
